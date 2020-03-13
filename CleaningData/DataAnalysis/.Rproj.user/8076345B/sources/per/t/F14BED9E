@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1521497023625.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "478650091",
+    "id" : "F14BED9E",
+    "lastKnownWriteTime" : 1521502214,
+    "last_content_update" : 1521502214266,
+    "path" : "~/Documents/Lab work/DataAnalysis/GraphTheory_CerPals.Rmd",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "4,0",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 9,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

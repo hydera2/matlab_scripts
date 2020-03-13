@@ -1,0 +1,3 @@
+"0","#Clustering.Coeff"
+"0","ggplot(data=GlobalData) + "
+"0","  geom_boxplot( aes(x=factor(Condition), y=Clustering.Coeff))  + ggtitle('Clustering.Coeff')"

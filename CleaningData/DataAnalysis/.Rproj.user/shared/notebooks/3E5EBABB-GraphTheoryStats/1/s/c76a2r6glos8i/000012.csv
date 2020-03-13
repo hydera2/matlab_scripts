@@ -1,0 +1,2 @@
+"0","ggplot(GlobalData, aes(x=factor(Condition), y=Global.Efficiency)) +"
+"0","  geom_point() + ggtitle('Global.Efficiency')"

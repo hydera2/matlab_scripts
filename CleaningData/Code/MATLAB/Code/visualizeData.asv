@@ -1,0 +1,91 @@
+function visualizeData(data, scale, timeUnit)
+    
+    %filename ='C:\Users\Andrew\Documents\Work\EEGleWave\EEG Report Generation\trunk\Octave\data\MAT\RFC01B0001\matlab.mat'
+        
+    assignin('base','data_visData',data); % save to workspace
+    
+    if (nargin < 2)
+        scale = 1;
+    end
+    
+    if (nargin < 3)
+        timeUnit = 0;
+    end
+    
+    assignin('base','scale_visData',scale);
+    
+    h = imrect(gca, [0 0 0 0]);
+    h.delete;
+    close;
+    numRects = 1;
+    
+    %load(filename);
+    numRows = size(data, 1);
+    numCols = size(data, 2);
+    
+    if (numRows == 65)
+        numChannels = 64;
+    else
+        numChannels = numRows;
+    end
+
+    sampDuration = 6; % minutes
+    fs_ref = 250;
+    numRefSamples = sampDuration*60*fs_ref;
+    numOfsamples_to = numCols - mod(numCols,numRefSamples);
+
+    fs = numOfsamples_to/(sampDuration*60);
+    if (fs == 0)
+        fs = fs_ref;
+    end
+    assignin('base','fs_visData',fs);
+    
+    shiftVal = 250;
+    assignin('base','shiftVal_visData',shiftVal);
+    plotColor = [0 0.4470 0.7410];
+    
+    if (timeUnit == 0)
+        xData = (1:length(data))/fs;
+    else
+        xData = 1:length(data);
+    end
+    assignin('base','xData_visData',xData);
+    
+    % Plot data;
+    figure(1);
+    hold on;
+    for n = 1:numChannels % Ignore last row
+        plot(xData, (numChannels - n)*shiftVal + scale*data(n,1:length(data)), 'Color', plotColor);
+    end
+
+    xLimits = [0 ceil(1.0025*xData(end))];
+    yLimits = [-2*shiftVal (numChannels + 3)*shiftVal];
+    xlim(xLimits);
+    ylim(yLimits);
+
+    % Create scrollplot object
+    scrollplot('Axis', 'XY', 'MinX', xLimits(1), 'MinY', yLimits(1), 'WindowSizeX', ceil(xLimits(2)/10), 'WindowSizeY', yLimits(2));
+    set(gca, 'ButtonDownFcn', @drawRegion);
+    
+    % Mark Selected Regions Button
+    btn = uicontrol('Style', 'pushbutton', 'String', 'Mark Selected Regions', 'Position', [5 5 200 20], 'Callback', 'markSelectedRegions(data_visData, selectedRegions_visData, scale_visData, shiftVal_visData, xData_visData, fs_visData);'); 
+    
+    function drawRegion(objectHandle, eventData)
+        coordinates = get(objectHandle,'CurrentPoint');
+        coordinates = coordinates(1,1:2);
+
+        if (timeUnit == 0)
+            rectWidth = 10
+        else
+            
+        end
+        
+        h(numRects) = imrect(gca, [coordinates(1) -1E8 10* 1E9]);
+
+        %display('Clicked.');
+
+        numRects = numRects + 1;
+        
+        assignin('base','selectedRegions_visData',h); % save to workspace
+    end
+end

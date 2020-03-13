@@ -1,0 +1,51 @@
+bin 1
+Means Ordinary
+.{5}
+
+bin 2
+Intention Ordinary
+.{2}
+
+bin 3
+Social Ordinary
+.{10}
+
+bin 4
+Means Peculiar
+.{6}
+
+bin 5
+Intention Peculiar
+.{3}
+
+bin 6
+Social Peculiar
+.{11}
+
+bin 7
+Peculiar Off
+.{14}
+
+bin 8
+Means Peculiar On
+{6}.{13}
+
+bin 9
+Intention Peculiar On
+{3}.{13}
+
+bin 10
+Social Peculiar On
+{11}.{13}
+
+bin 11
+Means Ordinary On
+{5}.{13}
+
+bin 12
+Intention Ordinary On
+{2}.{13}
+
+bin 13
+Social Ordinary On
+{10}.{13}

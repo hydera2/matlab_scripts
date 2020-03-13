@@ -1,0 +1,24 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1521488889358.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "67357853",
+    "id" : "ADB90B9",
+    "lastKnownWriteTime" : 1521496959,
+    "last_content_update" : 1521496959807,
+    "path" : "~/Documents/Lab work/CleaningData/DataAnalysis/GraphTheoryStats.Rmd",
+    "project_path" : "GraphTheoryStats.Rmd",
+    "properties" : {
+        "cursorPosition" : "4,8",
+        "last_setup_crc32" : "FE6A549Ebb338d19",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

@@ -1,0 +1,32 @@
+bin 1
+How Face
+.{1}
+
+bin 2
+How Hand
+.{2}
+
+bin 3
+Why Face
+.{3}
+
+bin 4
+Why Hand
+.{4}
+
+bin 5
+HF
+.{5}
+
+bin 6
+HH
+.{6}
+
+bin 7
+WF
+.{7}
+
+bin 8
+WH
+.{8}
+

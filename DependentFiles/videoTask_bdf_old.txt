@@ -1,0 +1,124 @@
+bin 1
+Experiment Prep
+.{13}
+
+bin 2
+Run Start
+.{14}
+
+bin 3
+Means Ordinary
+.{7}
+
+bin 4
+Intention Ordinary
+.{4}
+
+bin 5
+Social Ordinary
+.{15}
+
+bin 6
+Means Peculiar
+.{8}
+
+bin 7
+Intention Peculiar
+.{5}
+
+bin 8
+Social Peculiar
+.{16}
+
+bin 9
+Response
+.{10;11}
+
+bin 10
+Ordinary Response
+.{10}
+
+bin 11
+Peculiar Response
+.{11}
+
+bin 12
+Correct Response
+.{3}
+
+bin 13
+Incorrect Response
+.{6}
+
+bin 14
+Miss
+.{18}
+
+bin 15
+Movie End
+.{9}
+
+bin 16
+Break Start
+.{2}
+
+bin 17
+Break End
+.{1}
+
+bin 18
+Probe On
+.{12}
+
+bin 19
+Trial Start
+.{17}
+
+bin 20
+Peculiar Video
+.{5;8;16}
+
+bin 21
+Ordinary Video
+.{4;7;15}
+
+bin 22
+Peculiar On
+.{19}
+
+bin 23
+Peculiar Off
+.{20}
+
+bin 24
+Means Peculiar On
+{8}.{19}
+
+bin 25
+Intention Peculiar On
+{5}.{19}
+
+bin 26
+Social Peculiar On
+{16}.{19}
+
+bin 27
+Means Ordinary On
+{7}.{19}
+
+bin 28
+Intention Ordinary On
+{4}.{19}
+
+bin 29
+Social Ordinary On
+{15}.{19}
+
+bin 30
+Peculiar Video Event Onset
+{5;8;16}.{19}
+
+bin 31
+Dummy Video Event Onset
+{4;7;15}.{19}
+

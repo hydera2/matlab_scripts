@@ -1,0 +1,351 @@
+---
+title: "Plots"
+author: "Amna"
+date: '2018-03-11'
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Set up a Multiple plot function to plot all box plots, violin plots and scatterplots together
+```{r}
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+```
+
+First we look at the top genes based on CFU
+```{r box plots}
+library(dplyr)
+library(ggplot2)
+setwd("/Users/amnahyder/Documents/Repo_team_Big_Dog_Data/Danny")
+sepsis_data2<- read.table("genes.counts.descriptions.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
+meta_datanew2<- read.table("metadata.cfu.groups.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
+setwd('/Users/amnahyder/Documents/Repo_team_Big_Dog_Data/Linear modelling')
+DvN<- read.table("CFU.DvN.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
+SvN<- read.table("CFU.SvN.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
+SvD<- read.table("CFU.SvD.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
+#manually order them by Pvalue if they arent already sorted
+headDvN<-head(DvN)
+headSvN<-head(SvN)
+headSvD<-head(SvD)
+
+#getting the NEW predicted status from meta data table
+
+meta_datanew2 <- rename(meta_datanew2, "mouseID" = "rnaID" )
+meta_datanew2$group <- meta_datanew2$NewOutcome
+meta_datanew2$group <- ifelse(meta_datanew2$chal.status == "non challenged", "Control", as.character(meta_datanew2$group))
+meta_datanew2$group <- gsub("die", "Die", meta_datanew2$group)
+meta_datanew2$group <- gsub("live", "Live", meta_datanew2$group)
+
+
+#left join from external_gene_name and count in sepsisdata2 to all the X from headDvN, headSvN and headSvD.
+headDvN <- rename(headDvN, "external_gene_name" = "X" )
+headSvN <- rename(headSvN, "external_gene_name" = "X" )
+headSvD <- rename(headSvD, "external_gene_name" = "X" )
+
+
+joined_DvN = merge(x = headDvN, y = sepsis_data2, by = "external_gene_name", all.x = TRUE)
+
+joined_SvN = merge(x = headSvN, y = sepsis_data2, by = "external_gene_name", all.x = TRUE)
+
+joined_SvD = merge(x = headSvD, y = sepsis_data2, by = "external_gene_name", all.x = TRUE)
+
+#left join "group" from meta_datanew2 via mouseID to previous table
+
+joined_DvN = merge(x = joined_DvN, y = meta_datanew2, by = "mouseID", all.x = TRUE)
+
+joined_SvN = merge(x = joined_SvN, y = meta_datanew2, by = "mouseID", all.x = TRUE)
+
+joined_SvD = merge(x = joined_SvD, y = meta_datanew2, by = "mouseID", all.x = TRUE)
+
+
+
+#all_genes = unique(c(joined_DvN$external_gene_name, joined_SvD$external_gene_name, joined_SvN$external_gene_name))
+#tables = c(joined_DvN, joined_SvD, joined_SvN)
+
+#ALL PLOTS FOR DvN
+
+plot_data_DvN = data.frame(genes=joined_DvN$external_gene_name, gene_exp = joined_DvN$count, group=joined_DvN$group)
+
+ggplot(data=plot_data_DvN) + 
+geom_boxplot( aes(x=factor(genes), y=gene_exp, fill=factor(group)), position=position_dodge(1)) +ggtitle("Top Genes from Die vs. Controls")+
+    scale_x_discrete(breaks=c(1, 2, 3), labels=c("Control", "Die", "live"))
+
+boxplotsDvN = list()
+violinplotsDvN =list()
+scatterplotDvN = list()
+for (gene in unique(joined_DvN$external_gene_name)){
+  print(gene)
+  data_to_plot = data.frame(plot_data_DvN[plot_data_DvN["genes"] == gene,])
+  PLOTS<-ggplot(data=data_to_plot) + 
+  geom_boxplot( aes(x=factor(group), y=gene_exp))  + ggtitle(gene)
+  boxplotsDvN[[gene]] =PLOTS
+  VPLOTS<-ggplot(data=data_to_plot) +
+  geom_violin( aes(x=factor(group), y=gene_exp))  + ggtitle(gene)
+  violinplotsDvN[[gene]] =VPLOTS
+  SPLOT<-ggplot(data_to_plot, aes(x=factor(group), y=gene_exp)) +
+  geom_point()
+  scatterplotDvN[[gene]]=SPLOT
+}
+
+#ALL PLOTS FOR SvD
+plot_data_SvD = data.frame(genes=joined_SvD$external_gene_name, gene_exp = joined_SvD$count, group=joined_SvD$group)
+
+ggplot(data=plot_data_SvD) + 
+geom_boxplot( aes(x=factor(genes), y=gene_exp, fill=factor(group)), position=position_dodge(1)) +ggtitle("Top Genes from Die vs. Survive")+
+    scale_x_discrete(breaks=c(1, 2, 3), labels=c("Control", "Die", "live"))
+
+boxplotsSvD = list()
+violinplotsSvD =list()
+scatterplotSvD = list()
+for (gene in unique(joined_SvD$external_gene_name)){
+  print(gene)
+  data_to_plot = data.frame(plot_data_SvD[plot_data_SvD["genes"] == gene,])
+  PLOTS<-ggplot(data=data_to_plot) + 
+  geom_boxplot( aes(x=factor(group), y=gene_exp))  + ggtitle(gene)
+  boxplotsSvD[[gene]] =PLOTS
+  VPLOTS<-ggplot(data=data_to_plot) +
+  geom_violin( aes(x=factor(group), y=gene_exp))  + ggtitle(gene)
+  violinplotsSvD[[gene]] =VPLOTS
+  SPLOT<-ggplot(data_to_plot, aes(x=factor(group), y=gene_exp)) +
+  geom_point()
+  scatterplotSvD[[gene]]=SPLOT
+}
+
+# ALL PLOTS FOR SvN
+
+plot_data_SvN = data.frame(genes=joined_SvN$external_gene_name, gene_exp = joined_SvN$count, group=joined_SvN$group)
+
+ggplot(data=plot_data_SvN) + 
+geom_boxplot( aes(x=factor(genes), y=gene_exp, fill=factor(group)), position=position_dodge(1)) +ggtitle("Top Genes from Survive vs. Controls")+
+    scale_x_discrete(breaks=c(1, 2, 3), labels=c("Control", "Die", "live"))
+
+boxplotsSvN = list()
+violinplotsSvN =list()
+scatterplotSvN = list()
+for (gene in unique(joined_SvN$external_gene_name)){
+  print(gene)
+  data_to_plot = data.frame(plot_data_SvN[plot_data_SvN["genes"] == gene,])
+  PLOTS<-ggplot(data=data_to_plot) + 
+  geom_boxplot( aes(x=factor(group), y=gene_exp))  + ggtitle(gene)
+  boxplotsSvN[[gene]] =PLOTS
+  VPLOTS<-ggplot(data=data_to_plot) +
+  geom_violin( aes(x=factor(group), y=gene_exp))  + ggtitle(gene)
+  violinplotsSvN[[gene]] =VPLOTS
+  SPLOT<-ggplot(data_to_plot, aes(x=factor(group), y=gene_exp)) +
+  geom_point()
+  scatterplotSvN[[gene]]=SPLOT
+}
+
+```
+We can see from this figure that the gene expression values of each gene are on different scales. Thus, we plot them seperately and look at box plots, violin plots and scatter plots.
+#Plots for predicted to die vs. controls
+
+```{r}
+multiplot(plotlist=violinplotsDvN,cols=2,rows=3)
+multiplot(plotlist=scatterplotDvN,cols=3,rows=2)
+multiplot(plotlist=boxplotsDvN,cols=3,rows=2)
+```
+#Plots for predicted to survive vs. controls
+```{r}
+multiplot(plotlist=violinplotsSvN,cols=2,rows=3)
+multiplot(plotlist=scatterplotSvN,cols=3,rows=2)
+multiplot(plotlist=boxplotsSvN,cols=3,rows=2)
+```
+#Plots for predicted to survive vs. die
+```{r}
+multiplot(plotlist=violinplotsSvD,cols=2,rows=3)
+multiplot(plotlist=scatterplotSvD,cols=3,rows=2)
+multiplot(plotlist=boxplotsSvD,cols=3,rows=2)
+```
+
+
+
+We repeat this process for top genes based on the predictive model
+```{r box plots predict}
+library(dplyr)
+library(ggplot2)
+setwd("/Users/amnahyder/Documents/Repo_team_Big_Dog_Data/Danny")
+sepsis_data2<- read.table("genes.counts.descriptions.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
+meta_datanew2<- read.table("metadata.cfu.groups.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
+setwd('/Users/amnahyder/Documents/Repo_team_Big_Dog_Data/Linear modelling')
+DvN<- read.table("Predict.DvN.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
+SvN<- read.table("Predict.SvN.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
+SvD<- read.table("Predict.SvD.csv", sep = ",", header = TRUE, stringsAsFactors = FALSE)
+#manually order them by Pvalue if they arent already sorted
+headDvN<-head(DvN)
+headSvN<-head(SvN)
+headSvD<-head(SvD)
+
+#getting the NEW predicted status from meta data table
+
+meta_datanew2 <- rename(meta_datanew2, "mouseID" = "rnaID" )
+meta_datanew2$group <- meta_datanew2$NewOutcome
+meta_datanew2$group <- ifelse(meta_datanew2$chal.status == "non challenged", "Control", as.character(meta_datanew2$group))
+meta_datanew2$group <- gsub("die", "Die", meta_datanew2$group)
+meta_datanew2$group <- gsub("live", "Live", meta_datanew2$group)
+
+
+#left join from external_gene_name and count in sepsisdata2 to all the X from headDvN, headSvN and headSvD.
+headDvN <- rename(headDvN, "external_gene_name" = "X" )
+headSvN <- rename(headSvN, "external_gene_name" = "X" )
+headSvD <- rename(headSvD, "external_gene_name" = "X" )
+
+
+joined_DvN = merge(x = headDvN, y = sepsis_data2, by = "external_gene_name", all.x = TRUE)
+
+joined_SvN = merge(x = headSvN, y = sepsis_data2, by = "external_gene_name", all.x = TRUE)
+
+joined_SvD = merge(x = headSvD, y = sepsis_data2, by = "external_gene_name", all.x = TRUE)
+
+#left join "group" from meta_datanew2 via mouseID to previous table
+
+joined_DvN = merge(x = joined_DvN, y = meta_datanew2, by = "mouseID", all.x = TRUE)
+
+joined_SvN = merge(x = joined_SvN, y = meta_datanew2, by = "mouseID", all.x = TRUE)
+
+joined_SvD = merge(x = joined_SvD, y = meta_datanew2, by = "mouseID", all.x = TRUE)
+
+
+
+#all_genes = unique(c(joined_DvN$external_gene_name, joined_SvD$external_gene_name, joined_SvN$external_gene_name))
+#tables = c(joined_DvN, joined_SvD, joined_SvN)
+
+#ALL PLOTS FOR DvN
+
+plot_data_DvN = data.frame(genes=joined_DvN$external_gene_name, gene_exp = joined_DvN$count, group=joined_DvN$group)
+
+ggplot(data=plot_data_DvN) + 
+geom_boxplot( aes(x=factor(genes), y=gene_exp, fill=factor(group)), position=position_dodge(1)) +ggtitle("Top Genes from Die vs. Controls")+
+    scale_x_discrete(breaks=c(1, 2, 3), labels=c("Control", "Die", "live"))
+
+boxplotsDvN = list()
+violinplotsDvN =list()
+scatterplotDvN = list()
+for (gene in unique(joined_DvN$external_gene_name)){
+  print(gene)
+  data_to_plot = data.frame(plot_data_DvN[plot_data_DvN["genes"] == gene,])
+  PLOTS<-ggplot(data=data_to_plot) + 
+  geom_boxplot( aes(x=factor(group), y=gene_exp))  + ggtitle(gene)
+  boxplotsDvN[[gene]] =PLOTS
+  VPLOTS<-ggplot(data=data_to_plot) +
+  geom_violin( aes(x=factor(group), y=gene_exp))  + ggtitle(gene)
+  violinplotsDvN[[gene]] =VPLOTS
+  SPLOT<-ggplot(data_to_plot, aes(x=factor(group), y=gene_exp)) +
+  geom_point()
+  scatterplotDvN[[gene]]=SPLOT
+}
+
+#ALL PLOTS FOR SvD
+plot_data_SvD = data.frame(genes=joined_SvD$external_gene_name, gene_exp = joined_SvD$count, group=joined_SvD$group)
+
+ggplot(data=plot_data_SvD) + 
+geom_boxplot( aes(x=factor(genes), y=gene_exp, fill=factor(group)), position=position_dodge(1)) +ggtitle("Top Genes from Die vs. Survive")+
+    scale_x_discrete(breaks=c(1, 2, 3), labels=c("Control", "Die", "live"))
+
+boxplotsSvD = list()
+violinplotsSvD =list()
+scatterplotSvD = list()
+for (gene in unique(joined_SvD$external_gene_name)){
+  print(gene)
+  data_to_plot = data.frame(plot_data_SvD[plot_data_SvD["genes"] == gene,])
+  PLOTS<-ggplot(data=data_to_plot) + 
+  geom_boxplot( aes(x=factor(group), y=gene_exp))  + ggtitle(gene)
+  boxplotsSvD[[gene]] =PLOTS
+  VPLOTS<-ggplot(data=data_to_plot) +
+  geom_violin( aes(x=factor(group), y=gene_exp))  + ggtitle(gene)
+  violinplotsSvD[[gene]] =VPLOTS
+  SPLOT<-ggplot(data_to_plot, aes(x=factor(group), y=gene_exp)) +
+  geom_point()
+  scatterplotSvD[[gene]]=SPLOT
+}
+
+# ALL PLOTS FOR SvN
+
+plot_data_SvN = data.frame(genes=joined_SvN$external_gene_name, gene_exp = joined_SvN$count, group=joined_SvN$group)
+
+ggplot(data=plot_data_SvN) + 
+geom_boxplot( aes(x=factor(genes), y=gene_exp, fill=factor(group)), position=position_dodge(1)) +ggtitle("Top Genes from Survive vs. Controls")+
+    scale_x_discrete(breaks=c(1, 2, 3), labels=c("Control", "Die", "live"))
+
+boxplotsSvN = list()
+violinplotsSvN =list()
+scatterplotSvN = list()
+for (gene in unique(joined_SvN$external_gene_name)){
+  print(gene)
+  data_to_plot = data.frame(plot_data_SvN[plot_data_SvN["genes"] == gene,])
+  PLOTS<-ggplot(data=data_to_plot) + 
+  geom_boxplot( aes(x=factor(group), y=gene_exp))  + ggtitle(gene)
+  boxplotsSvN[[gene]] =PLOTS
+  VPLOTS<-ggplot(data=data_to_plot) +
+  geom_violin( aes(x=factor(group), y=gene_exp))  + ggtitle(gene)
+  violinplotsSvN[[gene]] =VPLOTS
+  SPLOT<-ggplot(data_to_plot, aes(x=factor(group), y=gene_exp)) +
+  geom_point()
+  scatterplotSvN[[gene]]=SPLOT
+}
+
+```
+We can see from this figure that the gene expression values of each gene are on different scales. Thus, we plot them seperately and look at box plots, violin plots and scatter plots.
+#Plots for predicted to die vs. controls
+
+```{r}
+multiplot(plotlist=violinplotsDvN,cols=2,rows=3)
+multiplot(plotlist=scatterplotDvN,cols=3,rows=2)
+multiplot(plotlist=boxplotsDvN,cols=3,rows=2)
+```
+#Plots for predicted to survive vs. controls
+```{r}
+multiplot(plotlist=violinplotsSvN,cols=2,rows=3)
+multiplot(plotlist=scatterplotSvN,cols=3,rows=2)
+multiplot(plotlist=boxplotsSvN,cols=3,rows=2)
+```
+#Plots for predicted to survive vs. die
+```{r}
+multiplot(plotlist=violinplotsSvD,cols=2,rows=3)
+multiplot(plotlist=scatterplotSvD,cols=3,rows=2)
+multiplot(plotlist=boxplotsSvD,cols=3,rows=2)

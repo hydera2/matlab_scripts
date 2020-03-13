@@ -1,0 +1,2 @@
+"0","ggplot(data=GlobalData) +"
+"0","  geom_violin( aes(x=factor(Condition), y=Modularity))  + ggtitle('Modularity')"
